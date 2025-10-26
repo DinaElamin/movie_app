@@ -4,6 +4,9 @@ import 'cubits/movie_cubit/movie_cubit.dart';
 import 'services/movie_service.dart';
 import 'screens/home_screen.dart';
 
+// ✅ متغير عام لتبديل الثيم في كل الصفحات
+final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier(true);
+
 void main() {
   runApp(const MovieApp());
 }
@@ -13,12 +16,53 @@ class MovieApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => MovieCubit(MovieService())..getPopularMovies(),
-      child: const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: HomeScreen(),
-      ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: isDarkModeNotifier,
+      builder: (context, isDarkMode, _) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => MovieCubit(MovieService())..getPopularMovies(),
+            ),
+          ],
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+
+            // ☀️ Light Theme
+            theme: ThemeData(
+              brightness: Brightness.light,
+              scaffoldBackgroundColor: Colors.white,
+              colorScheme: const ColorScheme.light(
+                primary: Color(0xFFE74C1B),
+                onBackground: Colors.black,
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                foregroundColor: Colors.black,
+              ),
+            ),
+
+            // 🌙 Dark Theme
+            darkTheme: ThemeData(
+              brightness: Brightness.dark,
+              scaffoldBackgroundColor: const Color(0xFF1E1E1E),
+              colorScheme: const ColorScheme.dark(
+                primary: Color(0xFFE74C1B),
+                onBackground: Colors.white,
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                foregroundColor: Colors.white,
+              ),
+            ),
+
+            home: const HomeScreen(),
+          ),
+        );
+      },
     );
   }
 }
