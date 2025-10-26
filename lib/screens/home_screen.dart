@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:movie_app/cubits/movie_cubit/movie_cubit.dart';
-import 'package:movie_app/widgets/movie_card.dart';
+import '../cubits/movie_cubit/movie_cubit.dart';
+import '../widgets/movie_card.dart';
+import '../main.dart'; // علشان نستخدم isDarkModeNotifier
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,7 +19,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Load popular on start
     context.read<MovieCubit>().getPopularMovies();
   }
 
@@ -30,10 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onSearchChanged(String value) {
-    // debounce 500ms
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      // call cubit search
       context.read<MovieCubit>().searchMovies(value);
     });
   }
@@ -41,21 +39,51 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<MovieCubit>();
+    final theme = Theme.of(context);
+    const primaryColor = Color(0xFFE74C1B); // اللون البرتقالي الثابت
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Movies',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onBackground,
+          ),
+        ),
+        actions: [
+          ValueListenableBuilder<bool>(
+            valueListenable: isDarkModeNotifier,
+            builder: (context, isDarkMode, _) {
+              return IconButton(
+                onPressed: () {
+                  isDarkModeNotifier.value = !isDarkModeNotifier.value;
+                },
+                icon: Icon(
+                  isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
+                  color: primaryColor,
+                  size: 28,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       bottomNavigationBar: Container(
         height: 65,
-        decoration: const BoxDecoration(
-          color: Color(0xFFE74C1B),
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: primaryColor,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
+          children: [
             Icon(Icons.home, color: Colors.white, size: 30),
             Icon(Icons.movie, color: Colors.white70, size: 28),
             Icon(Icons.favorite, color: Colors.white70, size: 28),
@@ -69,49 +97,48 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔍 Search bar (now connected)
+              // Search bar
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[850],
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.grey[850]
+                      : Colors.grey[200],
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: TextField(
                   controller: _searchController,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: theme.colorScheme.onBackground),
                   onChanged: _onSearchChanged,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: 'Search Movie...',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    icon: Icon(Icons.search, color: Colors.grey),
+                    hintStyle: TextStyle(color: Colors.grey[500]),
+                    icon: const Icon(Icons.search, color: Colors.grey),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-
-              // 🎬 Popular Movies (or search results)
-              const Text(
+              Text(
                 'Popular Movies',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: theme.colorScheme.onBackground,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
-
               Expanded(
                 child: BlocBuilder<MovieCubit, MovieState>(
                   builder: (context, state) {
                     if (state is MovieLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(
+                        child: CircularProgressIndicator(color: primaryColor),
+                      );
                     } else if (state is MovieLoaded) {
                       final movies = state.movies;
-
                       return ListView(
                         children: [
-                          // أفلام بشكل أفقي
                           SizedBox(
                             height: 220,
                             child: ListView.builder(
@@ -121,20 +148,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 final movie = movies[index];
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 10),
-                                  child: MovieCard(
-                                    movie: movie,
-                                  ),
+                                  child: MovieCard(movie: movie),
                                 );
                               },
                             ),
                           ),
                           const SizedBox(height: 20),
-
-                          // قسم الفيفورت
-                          const Text(
+                          Text(
                             'Your Favorites',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: theme.colorScheme.onBackground,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -146,13 +169,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Center(
                         child: Text(
                           state.message,
-                          style: const TextStyle(color: Colors.red),
+                          style: const TextStyle(color: Colors.redAccent),
                         ),
                       );
                     } else {
-                      // fallback
                       cubit.getPopularMovies();
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(
+                        child: CircularProgressIndicator(color: primaryColor),
+                      );
                     }
                   },
                 ),
