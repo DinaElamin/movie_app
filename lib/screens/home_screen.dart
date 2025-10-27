@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/movie_cubit/movie_cubit.dart';
 import '../widgets/movie_card.dart';
 import '../main.dart'; // علشان نستخدم isDarkModeNotifier
+import '../screens/favorites_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -84,10 +85,21 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Icon(Icons.home, color: Colors.white, size: 30),
-            Icon(Icons.movie, color: Colors.white70, size: 28),
-            Icon(Icons.favorite, color: Colors.white70, size: 28),
-            Icon(Icons.person_outline, color: Colors.white70, size: 28),
+            const Icon(Icons.home, color: Colors.white, size: 30),
+            const Icon(Icons.movie, color: Colors.white70, size: 28),
+            
+            // ✅ الإضافة هنا فقط علشان تفتح صفحة الفيفورت
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+                );
+              },
+              child: const Icon(Icons.favorite, color: Colors.white70, size: 28),
+            ),
+
+            const Icon(Icons.person_outline, color: Colors.white70, size: 28),
           ],
         ),
       ),

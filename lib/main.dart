@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'cubits/movie_cubit/movie_cubit.dart';
+import 'cubits/favorite_cubit/favorite_cubit.dart'; // ✅ أضفنا الاستيراد
 import 'services/movie_service.dart';
 import 'screens/home_screen.dart';
 
@@ -23,6 +24,9 @@ class MovieApp extends StatelessWidget {
           providers: [
             BlocProvider(
               create: (_) => MovieCubit(MovieService())..getPopularMovies(),
+            ),
+            BlocProvider(
+              create: (_) => FavoriteCubit(), // ✅ أضفنا الـ FavoriteCubit هنا
             ),
           ],
           child: MaterialApp(
