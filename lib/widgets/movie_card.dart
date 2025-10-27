@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/movie_model.dart';
-import '../Details/details_screen.dart'; // ✅ تم إضافة هذا السطر فقط
+import '../Details/details_screen.dart'; 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubits/favorite_cubit/favorite_cubit.dart';
 
 class MovieCard extends StatefulWidget {
   final Movie movie;
@@ -16,7 +18,9 @@ class MovieCard extends StatefulWidget {
 }
 
 class _MovieCardState extends State<MovieCard> {
-  bool isFavorite = false;
+  // NOTE: نحتفظ بالمتغير ده لو عايزة، لكن مش هنعتمد عليه للحفظ النهائي
+  // bool isFavorite = false;
+  // بدل ما نعتمد على setState للحفظ، هنقرأ الحالة من الكيوبت
 
   @override
   Widget build(BuildContext context) {
@@ -29,17 +33,17 @@ class _MovieCardState extends State<MovieCard> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => DetailsScreen(movie: widget.movie), // ✅ هنا الفتح لصفحة التفاصيل
+            builder: (_) => DetailsScreen(movie: widget.movie),
           ),
         );
       },
       child: widget.isHorizontal
-          ? buildHorizontalCard(imageUrl)
-          : buildVerticalCard(imageUrl),
+          ? buildHorizontalCard(imageUrl, context)
+          : buildVerticalCard(imageUrl, context),
     );
   }
 
-  Widget buildHorizontalCard(String imageUrl) {
+  Widget buildHorizontalCard(String imageUrl, BuildContext context) {
     return SizedBox(
       width: 140,
       child: Stack(
@@ -88,12 +92,19 @@ class _MovieCardState extends State<MovieCard> {
             top: 8,
             child: GestureDetector(
               onTap: () {
-                setState(() => isFavorite = !isFavorite);
+                // بدل setState نستخدم الكيوبت
+                context.read<FavoriteCubit>().toggleFavorite(widget.movie);
               },
-              child: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: isFavorite ? Colors.red : Colors.white,
-                size: 24,
+              child: BlocBuilder<FavoriteCubit, FavoriteState>(
+                builder: (context, state) {
+                  final isFav =
+                      context.read<FavoriteCubit>().isFavorite(widget.movie);
+                  return Icon(
+                    isFav ? Icons.favorite : Icons.favorite_border,
+                    color: isFav ? Colors.red : Colors.white,
+                    size: 24,
+                  );
+                },
               ),
             ),
           ),
@@ -102,7 +113,7 @@ class _MovieCardState extends State<MovieCard> {
     );
   }
 
-  Widget buildVerticalCard(String imageUrl) {
+  Widget buildVerticalCard(String imageUrl, BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[900],
@@ -153,11 +164,17 @@ class _MovieCardState extends State<MovieCard> {
           ),
           IconButton(
             onPressed: () {
-              setState(() => isFavorite = !isFavorite);
+              context.read<FavoriteCubit>().toggleFavorite(widget.movie);
             },
-            icon: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: isFavorite ? Colors.red : Colors.white,
+            icon: BlocBuilder<FavoriteCubit, FavoriteState>(
+              builder: (context, state) {
+                final isFav =
+                    context.read<FavoriteCubit>().isFavorite(widget.movie);
+                return Icon(
+                  isFav ? Icons.favorite : Icons.favorite_border,
+                  color: isFav ? Colors.red : Colors.white,
+                );
+              },
             ),
           ),
         ],
