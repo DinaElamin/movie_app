@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:movie_app/screens/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
+
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 import 'cubits/movie_cubit/movie_cubit.dart';
 import 'cubits/favorite_cubit/favorite_cubit.dart';
 import 'services/movie_service.dart';
-import 'screens/home_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier(true);
 
-void main() async{
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  try {
+    await FirebaseFirestore.instance.enablePersistence();
+  } catch (e) {
+    debugPrint("Firestore persistence not supported on this platform: $e");
+  }
+
   runApp(const MovieApp());
 }
 
@@ -31,7 +41,7 @@ class MovieApp extends StatelessWidget {
               create: (_) => MovieCubit(MovieService())..getPopularMovies(),
             ),
             BlocProvider(
-              create: (_) => FavoriteCubit(), 
+              create: (_) => FavoriteCubit(),
             ),
           ],
           child: MaterialApp(

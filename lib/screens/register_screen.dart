@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../main.dart';
 import 'login_screen.dart';
 import '../screens/home_screen.dart';
@@ -21,10 +22,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     setState(() => _isLoading = true);
     try {
-      await _auth.createUserWithEmailAndPassword(
+      // ✅ إنشاء المستخدم في FirebaseAuth
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      // ✅ حفظ بيانات المستخدم في Firestore
+      User? user = userCredential.user;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'email': user.email,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      // ✅ الانتقال إلى الصفحة الرئيسية
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -51,10 +64,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-             
               const SizedBox(height: 20),
               Text(
-                'Create Account ',
+                'Create Account',
                 style: TextStyle(
                   color: theme.colorScheme.onBackground,
                   fontWeight: FontWeight.bold,
@@ -96,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onPressed: _isLoading ? null : _register,
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Register', style: TextStyle(fontSize: 18,color: Colors.white)),
+                    : const Text('Register', style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
               const SizedBox(height: 18),
               TextButton(
