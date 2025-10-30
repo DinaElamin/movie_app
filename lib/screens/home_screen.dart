@@ -5,6 +5,7 @@ import '../cubits/movie_cubit/movie_cubit.dart';
 import '../widgets/movie_card.dart';
 import '../main.dart';
 import '../screens/favorites_screen.dart';
+import '../screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +17,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -35,6 +38,22 @@ class _HomeScreenState extends State<HomeScreen> {
     _debounce = Timer(const Duration(milliseconds: 500), () {
       context.read<MovieCubit>().searchMovies(value);
     });
+  }
+
+  void _onItemTapped(int index) {
+    setState(() => _selectedIndex = index);
+
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+      );
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ProfileScreen()),
+      );
+    }
   }
 
   @override
@@ -73,6 +92,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+
+      // ✅ Bottom Navigation Bar
       bottomNavigationBar: Container(
         height: 65,
         decoration: BoxDecoration(
@@ -85,28 +106,49 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            const Icon(Icons.home, color: Colors.white, size: 30),
-            const Icon(Icons.movie, color: Colors.white70, size: 28),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const FavoritesScreen()),
-                );
-              },
-              child: const Icon(Icons.favorite, color: Colors.white70, size: 28),
+            IconButton(
+              onPressed: () => _onItemTapped(0),
+              icon: Icon(
+                Icons.home,
+                color: _selectedIndex == 0 ? Colors.white : Colors.white70,
+                size: 30,
+              ),
             ),
-            const Icon(Icons.person_outline, color: Colors.white70, size: 28),
+            IconButton(
+              onPressed: () => _onItemTapped(1),
+              icon: Icon(
+                Icons.movie,
+                color: _selectedIndex == 1 ? Colors.white : Colors.white70,
+                size: 28,
+              ),
+            ),
+            IconButton(
+              onPressed: () => _onItemTapped(2),
+              icon: Icon(
+                Icons.favorite,
+                color: _selectedIndex == 2 ? Colors.white : Colors.white70,
+                size: 28,
+              ),
+            ),
+            IconButton(
+              onPressed: () => _onItemTapped(3),
+              icon: Icon(
+                Icons.person_outline,
+                color: _selectedIndex == 3 ? Colors.white : Colors.white70,
+                size: 28,
+              ),
+            ),
           ],
         ),
       ),
+
+      // ✅ Main Body
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-             
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
@@ -128,7 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
               Text(
                 'Popular Movies',
                 style: TextStyle(
@@ -138,7 +179,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
               Expanded(
                 child: BlocBuilder<MovieCubit, MovieState>(
                   builder: (context, state) {
@@ -152,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (movies.isEmpty) {
                         return const Center(
                           child: Text(
-                            'No movies found ',
+                            'No movies found',
                             style: TextStyle(color: Colors.grey),
                           ),
                         );
@@ -160,10 +200,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       return GridView.builder(
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, 
+                          crossAxisCount: 2,
                           mainAxisSpacing: 12,
                           crossAxisSpacing: 12,
-                          childAspectRatio: 0.9, 
+                          childAspectRatio: 0.9,
                         ),
                         itemCount: movies.length,
                         itemBuilder: (context, index) {

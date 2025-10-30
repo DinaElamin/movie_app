@@ -46,7 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '575923621555',
     projectId: 'movieapp-3fcd5',
     authDomain: 'movieapp-3fcd5.firebaseapp.com',
-    storageBucket: 'movieapp-3fcd5.firebasestorage.app',
+    storageBucket: 'movieapp-3fcd5.appspot.com',
     measurementId: 'G-4HB068XEP3',
   );
 
@@ -55,7 +55,7 @@ class DefaultFirebaseOptions {
     appId: '1:575923621555:android:2af3f2332552ba1592aac6',
     messagingSenderId: '575923621555',
     projectId: 'movieapp-3fcd5',
-    storageBucket: 'movieapp-3fcd5.firebasestorage.app',
+    storageBucket: 'movieapp-3fcd5.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
     appId: '1:575923621555:ios:7aa2fd24b488694192aac6',
     messagingSenderId: '575923621555',
     projectId: 'movieapp-3fcd5',
-    storageBucket: 'movieapp-3fcd5.firebasestorage.app',
+    storageBucket: 'movieapp-3fcd5.appspot.com',
     iosBundleId: 'com.example.movieApp',
   );
 
@@ -72,7 +72,7 @@ class DefaultFirebaseOptions {
     appId: '1:575923621555:ios:7aa2fd24b488694192aac6',
     messagingSenderId: '575923621555',
     projectId: 'movieapp-3fcd5',
-    storageBucket: 'movieapp-3fcd5.firebasestorage.app',
+    storageBucket: 'movieapp-3fcd5.appspot.com',
     iosBundleId: 'com.example.movieApp',
   );
 
@@ -82,7 +82,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '575923621555',
     projectId: 'movieapp-3fcd5',
     authDomain: 'movieapp-3fcd5.firebaseapp.com',
-    storageBucket: 'movieapp-3fcd5.firebasestorage.app',
+    storageBucket: 'movieapp-3fcd5.appspot.com',
     measurementId: 'G-CQ4C4WFS9J',
   );
 }
