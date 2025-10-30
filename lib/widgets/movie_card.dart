@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/movie_model.dart';
-import '../Details/details_screen.dart'; 
+import '../Details/details_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/favorite_cubit/favorite_cubit.dart';
 
@@ -18,13 +18,9 @@ class MovieCard extends StatefulWidget {
 }
 
 class _MovieCardState extends State<MovieCard> {
-  // NOTE: نحتفظ بالمتغير ده لو عايزة، لكن مش هنعتمد عليه للحفظ النهائي
-  // bool isFavorite = false;
-  // بدل ما نعتمد على setState للحفظ، هنقرأ الحالة من الكيوبت
-
   @override
   Widget build(BuildContext context) {
-    final imageUrl = widget.movie.posterPath != null
+    final imageUrl = widget.movie.posterPath != null && widget.movie.posterPath!.isNotEmpty
         ? 'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}'
         : 'https://via.placeholder.com/150';
 
@@ -32,51 +28,63 @@ class _MovieCardState extends State<MovieCard> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => DetailsScreen(movie: widget.movie),
-          ),
+          MaterialPageRoute(builder: (_) => DetailsScreen(movie: widget.movie)),
         );
       },
       child: widget.isHorizontal
-          ? buildHorizontalCard(imageUrl, context)
-          : buildVerticalCard(imageUrl, context),
+          ? _buildHorizontalCard(imageUrl, context)
+          : _buildVerticalCard(imageUrl, context),
     );
   }
 
-  Widget buildHorizontalCard(String imageUrl, BuildContext context) {
-    return SizedBox(
-      width: 140,
+  // 🎬 شكل أفقي (للـ Home Screen)
+  Widget _buildHorizontalCard(String imageUrl, BuildContext context) {
+    return Container(
+      width: 150,
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: Stack(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  widget.movie.posterPath != null &&
-                          widget.movie.posterPath!.isNotEmpty
-                      ? 'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}'
-                      : 'https://via.placeholder.com/150',
-                  fit: BoxFit.cover,
-                  height: 180,
-                  width: 140,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[800],
-                      height: 180,
-                      width: 140,
-                      child: const Icon(
-                        Icons.broken_image,
-                        color: Colors.white54,
-                        size: 50,
-                      ),
-                    );
-                  },
+          ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Image.network(
+              imageUrl,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.grey[800],
+                height: 220,
+                child: const Icon(Icons.broken_image, color: Colors.white54, size: 50),
+              ),
+            ),
+          ),
+          // تدرج أسود تحت النصوص
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(15)),
+                gradient: LinearGradient(
+                  colors: [Colors.transparent, Colors.black87],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
-              const SizedBox(height: 5),
-              Text(
+              padding: const EdgeInsets.all(8),
+              child: Text(
                 widget.movie.title,
                 style: const TextStyle(
                   color: Colors.white,
@@ -85,27 +93,31 @@ class _MovieCardState extends State<MovieCard> {
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
-            ],
+            ),
           ),
+          // أيقونة المفضلة
           Positioned(
-            right: 8,
-            top: 8,
-            child: GestureDetector(
-              onTap: () {
-                // بدل setState نستخدم الكيوبت
-                context.read<FavoriteCubit>().toggleFavorite(widget.movie);
+            right: 10,
+            top: 10,
+            child: BlocBuilder<FavoriteCubit, FavoriteState>(
+              builder: (context, state) {
+                final isFav = context.read<FavoriteCubit>().isFavorite(widget.movie);
+                return GestureDetector(
+                  onTap: () => context.read<FavoriteCubit>().toggleFavorite(widget.movie),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.black45,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? Colors.redAccent : Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                );
               },
-              child: BlocBuilder<FavoriteCubit, FavoriteState>(
-                builder: (context, state) {
-                  final isFav =
-                      context.read<FavoriteCubit>().isFavorite(widget.movie);
-                  return Icon(
-                    isFav ? Icons.favorite : Icons.favorite_border,
-                    color: isFav ? Colors.red : Colors.white,
-                    size: 24,
-                  );
-                },
-              ),
             ),
           ),
         ],
@@ -113,30 +125,38 @@ class _MovieCardState extends State<MovieCard> {
     );
   }
 
-  Widget buildVerticalCard(String imageUrl, BuildContext context) {
+  // 🎞️ شكل رأسي (مثلاً في صفحة All Movies)
+  Widget _buildVerticalCard(String imageUrl, BuildContext context) {
     return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
+              topLeft: Radius.circular(12),
+              bottomLeft: Radius.circular(12),
             ),
             child: Image.network(
               imageUrl,
-              fit: BoxFit.cover,
               width: 100,
               height: 140,
+              fit: BoxFit.cover,
             ),
           ),
           Expanded(
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -150,11 +170,10 @@ class _MovieCardState extends State<MovieCard> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     widget.movie.overview,
-                    style:
-                        const TextStyle(color: Colors.grey, fontSize: 13),
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -162,20 +181,17 @@ class _MovieCardState extends State<MovieCard> {
               ),
             ),
           ),
-          IconButton(
-            onPressed: () {
-              context.read<FavoriteCubit>().toggleFavorite(widget.movie);
-            },
-            icon: BlocBuilder<FavoriteCubit, FavoriteState>(
-              builder: (context, state) {
-                final isFav =
-                    context.read<FavoriteCubit>().isFavorite(widget.movie);
-                return Icon(
+          BlocBuilder<FavoriteCubit, FavoriteState>(
+            builder: (context, state) {
+              final isFav = context.read<FavoriteCubit>().isFavorite(widget.movie);
+              return IconButton(
+                icon: Icon(
                   isFav ? Icons.favorite : Icons.favorite_border,
-                  color: isFav ? Colors.red : Colors.white,
-                );
-              },
-            ),
+                  color: isFav ? Colors.redAccent : Colors.white,
+                ),
+                onPressed: () => context.read<FavoriteCubit>().toggleFavorite(widget.movie),
+              );
+            },
           ),
         ],
       ),

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'cubits/movie_cubit/movie_cubit.dart';
-import 'cubits/favorite_cubit/favorite_cubit.dart'; // ✅ أضفنا الاستيراد
+import 'cubits/favorite_cubit/favorite_cubit.dart';
 import 'services/movie_service.dart';
 import 'screens/home_screen.dart';
 
-// ✅ متغير عام لتبديل الثيم في كل الصفحات
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier(true);
 
 void main() {
@@ -26,14 +25,13 @@ class MovieApp extends StatelessWidget {
               create: (_) => MovieCubit(MovieService())..getPopularMovies(),
             ),
             BlocProvider(
-              create: (_) => FavoriteCubit(), // ✅ أضفنا الـ FavoriteCubit هنا
+              create: (_) => FavoriteCubit(), 
             ),
           ],
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
 
-            // ☀️ Light Theme
             theme: ThemeData(
               brightness: Brightness.light,
               scaffoldBackgroundColor: Colors.white,
@@ -48,7 +46,6 @@ class MovieApp extends StatelessWidget {
               ),
             ),
 
-            // 🌙 Dark Theme
             darkTheme: ThemeData(
               brightness: Brightness.dark,
               scaffoldBackgroundColor: const Color(0xFF1E1E1E),

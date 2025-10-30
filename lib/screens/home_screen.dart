@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/movie_cubit/movie_cubit.dart';
 import '../widgets/movie_card.dart';
-import '../main.dart'; // علشان نستخدم isDarkModeNotifier
-import '../screens/favorites_screen.dart'; 
+import '../main.dart';
+import '../screens/favorites_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final cubit = context.read<MovieCubit>();
     final theme = Theme.of(context);
-    const primaryColor = Color(0xFFE74C1B); // اللون البرتقالي الثابت
+    const primaryColor = Color(0xFFE74C1B);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(
                   isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
                   color: primaryColor,
-                  size: 28,
+                  size: 26,
                 ),
               );
             },
@@ -87,8 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const Icon(Icons.home, color: Colors.white, size: 30),
             const Icon(Icons.movie, color: Colors.white70, size: 28),
-            
-            // ✅ الإضافة هنا فقط علشان تفتح صفحة الفيفورت
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -98,7 +96,6 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               child: const Icon(Icons.favorite, color: Colors.white70, size: 28),
             ),
-
             const Icon(Icons.person_outline, color: Colors.white70, size: 28),
           ],
         ),
@@ -109,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search bar
+             
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
@@ -131,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+
               Text(
                 'Popular Movies',
                 style: TextStyle(
@@ -140,6 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 10),
+
               Expanded(
                 child: BlocBuilder<MovieCubit, MovieState>(
                   builder: (context, state) {
@@ -149,33 +148,31 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     } else if (state is MovieLoaded) {
                       final movies = state.movies;
-                      return ListView(
-                        children: [
-                          SizedBox(
-                            height: 220,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: movies.length,
-                              itemBuilder: (context, index) {
-                                final movie = movies[index];
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 10),
-                                  child: MovieCard(movie: movie),
-                                );
-                              },
-                            ),
+
+                      if (movies.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No movies found ',
+                            style: TextStyle(color: Colors.grey),
                           ),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Your Favorites',
-                            style: TextStyle(
-                              color: theme.colorScheme.onBackground,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
+                        );
+                      }
+
+                      return GridView.builder(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, 
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 0.9, 
+                        ),
+                        itemCount: movies.length,
+                        itemBuilder: (context, index) {
+                          final movie = movies[index];
+                          return MovieCard(
+                            movie: movie,
+                            isHorizontal: true,
+                          );
+                        },
                       );
                     } else if (state is MovieError) {
                       return Center(
